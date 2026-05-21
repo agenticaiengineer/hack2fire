@@ -100,7 +100,7 @@ export default async function AdminPage() {
                     <div className="version-list">
                       {question.versions.map((version) => (
                         <div key={version.id} className="version-row">
-                          <span className="badge">v{version.version}</span>
+                          <a href={`/admin/questions/${question.slug}/versions/${version.version}`} className="badge">v{version.version}</a>
                           <span className="badge">{version.status.toLowerCase()}</span>
                           <span className="muted">{version.changeNote || "No change note"} by {version.createdBy.name}</span>
                           {version.status !== "PUBLISHED" ? (
