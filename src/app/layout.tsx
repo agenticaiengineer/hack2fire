@@ -27,6 +27,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <Link href="/questions">Questions</Link>
             <Link href="/companies">Companies</Link>
             <Link href="/dashboard">Dashboard</Link>
+            <Link href="/cheatsheet/python_interview.html">Cheatsheet</Link>
             {user?.role === "ADMIN" ? <Link href="/admin">Admin</Link> : null}
           </nav>
           <div className="account-area">
