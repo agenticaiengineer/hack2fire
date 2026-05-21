@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  END_USER
+  CONTRIBUTOR
+  ADMIN
+}
+
+enum QuestionType {
+  CODING
+  SYSTEM_DESIGN
+  BEHAVIORAL
+  VIDEO
+  MIXED
+}
+
+enum QuestionStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(END_USER)
+  createdAt    DateTime   @default(now())
+  questions    Question[] @relation("QuestionAuthor")
+  versions     QuestionVersion[] @relation("QuestionVersionAuthor")
+  attempts     Attempt[]
+}
+
+model QuestionTemplate {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  type        QuestionType @default(CODING)
+  scaffold    Json
+  createdAt   DateTime     @default(now())
+  questions   Question[]
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  questions   Question[]
+}
+
+model Question {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  summary     String
+  company     String?
+  difficulty  Difficulty      @default(MEDIUM)
+  type        QuestionType     @default(CODING)
+  status      QuestionStatus   @default(REVIEW)
+  tags        String[]
+  promptMd    String
+  solutionMd  String?
+  videoUrl    String?
+  starterCode String?
+  testCases   Json?
+  currentVersion   Int             @default(1)
+  publishedVersion Int             @default(1)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  authorId    String
+  author      User            @relation("QuestionAuthor", fields: [authorId], references: [id])
+  templateId  String?
+  template    QuestionTemplate? @relation(fields: [templateId], references: [id])
+  categoryId  String?
+  category    Category?         @relation(fields: [categoryId], references: [id])
+  versions    QuestionVersion[]
+  attempts    Attempt[]
+}
+
+model QuestionVersion {
+  id          String         @id @default(cuid())
+  questionId  String
+  question    Question       @relation(fields: [questionId], references: [id])
+  version     Int
+  status      QuestionStatus @default(REVIEW)
+  title       String
+  summary     String
+  company     String?
+  difficulty  Difficulty     @default(MEDIUM)
+  type        QuestionType    @default(CODING)
+  tags        String[]
+  promptMd    String
+  solutionMd  String?
+  videoUrl    String?
+  starterCode String?
+  changeNote  String?
+  createdAt   DateTime       @default(now())
+  createdById String
+  createdBy   User           @relation("QuestionVersionAuthor", fields: [createdById], references: [id])
+
+  @@unique([questionId, version])
+}
+
+model Attempt {
+  id         String   @id @default(cuid())
+  code       String
+  notes      String?
+  createdAt  DateTime @default(now())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+}
